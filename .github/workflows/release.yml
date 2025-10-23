@@ -12,9 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
@@ -25,18 +27,17 @@ jobs:
 
       - name: Build release distributions
         run: |
-          # Ensure working directory is correct (change 'src' if needed)
-          # cd src  # Uncomment if your code is inside a subfolder
-          python -m build || echo "Build failed, continuing to create .var"
+          # Uncomment the next line if your package is in a subfolder, e.g., src/
+          # cd src
+          python -m build || echo "Build failed or no build files created"
 
-      - name: Check dist contents
+      - name: Debug dist folder
         run: |
           echo "Contents of dist/ folder:"
           ls -l dist || echo "dist/ does not exist"
 
-      - name: Create .var file (zip of dist/)
+      - name: Ensure dist/ exists and create .var
         run: |
-          # Ensure dist/ exists
           if [ ! -d "dist" ]; then
             mkdir dist
           fi
@@ -64,13 +65,13 @@ jobs:
       name: pypi
 
     steps:
-      - name: Retrieve release distributions
+      - name: Download release artifact
         uses: actions/download-artifact@v4
         with:
           name: release-dists
           path: dist/
 
-      - name: Publish release distributions to PyPI
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
